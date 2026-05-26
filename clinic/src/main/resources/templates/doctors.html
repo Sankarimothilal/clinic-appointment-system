@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Doctors - ClinicEase</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f6fa; }
+        .navbar {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 1rem 2rem;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+        .navbar h1 { font-size: 20px; }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .nav-links a:hover { opacity: 1; }
+        .nav-welcome { font-size: 14px; opacity: 0.9; margin-right: 10px; }
+        .container { max-width: 1100px; margin: 2rem auto; padding: 0 1.5rem; }
+        .page-header { margin-bottom: 1.5rem; }
+        .page-header h2 { color: #333; font-size: 1.5rem; }
+        .page-header p { color: #888; font-size: 14px; margin-top: 4px; }
+        .search-bar {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        .search-bar input {
+            flex: 1;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 14px;
+            outline: none;
+        }
+        .search-bar input:focus { border-color: #667eea; }
+        .doctor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        .doctor-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.07);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .doctor-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.12); }
+        .doctor-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 1rem;
+        }
+        .doctor-card h3 { color: #333; font-size: 16px; margin-bottom: 6px; }
+        .badge {
+            display: inline-block;
+            background: #f0f0ff;
+            color: #667eea;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+        .doctor-info p {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .book-btn {
+            width: 100%;
+            padding: 11px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 1rem;
+            transition: opacity 0.2s;
+        }
+        .book-btn:hover { opacity: 0.9; }
+        .empty-state { text-align: center; padding: 4rem; color: #999; }
+        .empty-state span { font-size: 3rem; display: block; margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+<div class="navbar">
+    <h1>🏥 ClinicEase</h1>
+    <div style="display:flex;align-items:center">
+        <span class="nav-welcome" id="welcomeMsg"></span>
+        <div class="nav-links">
+            <a href="/patient-dashboard">Dashboard</a>
+            <a href="/login" onclick="logout()">Logout</a>
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div class="page-header">
+        <h2>Find a Doctor</h2>
+        <p>Browse our verified doctors and book an appointment</p>
+    </div>
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="🔍 Search by name or specialization..." oninput="filterDoctors()"/>
+    </div>
+    <div class="doctor-grid" id="doctorGrid">
+        <p style="color:#999">Loading doctors...</p>
+    </div>
+</div>
+<script>
+let allDoctors = [];
+document.getElementById('welcomeMsg').textContent = 'Hi, ' + (localStorage.getItem('name') || 'Patient');
+
+async function loadDoctors() {
+    const res = await fetch('/api/doctors/all');
+    allDoctors = await res.json();
+    renderDoctors(allDoctors);
+}
+
+function filterDoctors() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    renderDoctors(allDoctors.filter(d =>
+        d.name.toLowerCase().includes(q) ||
+        (d.specialization && d.specialization.toLowerCase().includes(q))
+    ));
+}
+
+function renderDoctors(doctors) {
+    const grid = document.getElementById('doctorGrid');
+    if (doctors.length === 0) {
+        grid.innerHTML = '<div class="empty-state"><span>👨‍⚕️</span><p>No doctors found.</p></div>';
+        return;
+    }
+    grid.innerHTML = '';
+    doctors.forEach(doctor => {
+        grid.innerHTML += `
+        <div class="doctor-card">
+            <div class="doctor-avatar">👨‍⚕️</div>
+            <h3>${doctor.name}</h3>
+            <span class="badge">${doctor.specialization || 'General'}</span>
+            <div class="doctor-info">
+                <p>🎓 ${doctor.qualification || 'MBBS'}</p>
+                <p>⏱ ${doctor.experienceYears || 0} years experience</p>
+                <p>📞 ${doctor.phone || 'N/A'}</p>
+            </div>
+            <button class="book-btn" onclick="window.location.href='/book?doctorId=${doctor.id}'">
+                Book Appointment
+            </button>
+        </div>`;
+    });
+}
+
+function logout() { localStorage.clear(); }
+loadDoctors();
+</script>
+</body>
+</html>

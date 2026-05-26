@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Clinic - Login</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .page-wrapper {
+            display: flex;
+            gap: 2rem;
+            align-items: stretch;
+            max-width: 900px;
+            width: 90%;
+        }
+        .left-panel {
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            color: white;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .left-panel h1 { font-size: 2rem; margin-bottom: 1rem; }
+        .left-panel p { opacity: 0.85; line-height: 1.7; margin-bottom: 2rem; }
+        .feature { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 14px; opacity: 0.9; }
+        .feature span { font-size: 20px; }
+        .right-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            flex: 1;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .tab-row {
+            display: flex;
+            gap: 0;
+            margin-bottom: 2rem;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+        }
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            background: #f8f9fa;
+            border: none;
+            transition: all 0.2s;
+        }
+        .tab.active { background: #667eea; color: white; }
+        h2 { color: #333; margin-bottom: 0.3rem; font-size: 1.4rem; }
+        .subtitle { color: #999; font-size: 13px; margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 5px; color: #555; font-size: 13px; font-weight: 500; }
+        input {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+        input:focus { border-color: #667eea; }
+        .login-btn {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 5px;
+            transition: opacity 0.2s;
+        }
+        .login-btn:hover { opacity: 0.9; }
+        .divider { text-align: center; margin: 1.2rem 0; color: #bbb; font-size: 13px; position: relative; }
+        .divider::before, .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 42%;
+            height: 1px;
+            background: #e0e0e0;
+        }
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+        .register-btn {
+            width: 100%;
+            padding: 12px;
+            background: white;
+            color: #667eea;
+            border: 1.5px solid #667eea;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .register-btn:hover { background: #f0f0ff; }
+        .error { color: #e74c3c; font-size: 13px; text-align: center; margin-top: 10px; min-height: 18px; }
+        .success { color: #27ae60; font-size: 13px; text-align: center; margin-top: 10px; }
+        .doctor-note {
+            background: #fff8e1;
+            border: 1px solid #ffe082;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 12px;
+            color: #795548;
+            margin-top: 1rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="page-wrapper">
+    <div class="left-panel">
+        <h1>🏥 ClinicEase</h1>
+        <p>Your trusted local clinic appointment system. Book appointments, manage your health — all in one place.</p>
+        <div class="feature"><span>✅</span> Book appointments instantly</div>
+        <div class="feature"><span>👨‍⚕️</span> Verified local doctors</div>
+        <div class="feature"><span>🔔</span> Appointment reminders</div>
+        <div class="feature"><span>📋</span> View your health history</div>
+    </div>
+
+    <div class="right-panel">
+        <div class="tab-row">
+            <button class="tab active" onclick="showTab('patient')">👤 Patient</button>
+            <button class="tab" onclick="showTab('doctor')">👨‍⚕️ Doctor</button>
+        </div>
+
+        <!-- Patient Login -->
+        <div id="patientTab">
+            <h2>Welcome back!</h2>
+            <p class="subtitle">Login to manage your appointments</p>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="patientEmail" placeholder="Enter your email"/>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="patientPassword" placeholder="Enter your password"/>
+            </div>
+            <button class="login-btn" onclick="loginPatient()">Login as Patient</button>
+            <div id="patientMsg" class="error"></div>
+            <div class="divider">or</div>
+            <button class="register-btn" onclick="window.location.href='/register'">
+                Create New Account
+            </button>
+        </div>
+
+        <!-- Doctor Login -->
+        <div id="doctorTab" style="display:none">
+            <h2>Doctor Portal</h2>
+            <p class="subtitle">Login to manage your schedule</p>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="doctorEmail" placeholder="Enter your email"/>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="doctorPassword" placeholder="Enter your password"/>
+            </div>
+            <button class="login-btn" onclick="loginDoctor()">Login as Doctor</button>
+            <div id="doctorMsg" class="error"></div>
+            <div class="doctor-note">
+                🔒 Doctor accounts are created by the clinic admin. Contact your clinic administrator if you need access.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showTab(tab) {
+    document.getElementById('patientTab').style.display = tab === 'patient' ? 'block' : 'none';
+    document.getElementById('doctorTab').style.display = tab === 'doctor' ? 'block' : 'none';
+    document.querySelectorAll('.tab').forEach((t, i) => {
+        t.classList.toggle('active', (tab === 'patient' && i === 0) || (tab === 'doctor' && i === 1));
+    });
+}
+
+async function loginPatient() {
+    const data = {
+        email: document.getElementById('patientEmail').value,
+        password: document.getElementById('patientPassword').value
+    };
+    const msg = document.getElementById('patientMsg');
+    if (!data.email || !data.password) {
+        msg.textContent = 'Please fill in all fields!';
+        return;
+    }
+    try {
+        const response = await fetch('/api/auth/login/patient', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (response.ok) {
+            localStorage.setItem('token', result.token);
+            localStorage.setItem('name', result.name);
+            localStorage.setItem('patientId', result.id);
+            msg.style.color = '#27ae60';
+            msg.textContent = '✅ Login successful! Redirecting...';
+            setTimeout(() => window.location.href = '/patient-dashboard', 1500);
+        } else {
+            msg.style.color = '#e74c3c';
+            msg.textContent = result.message;
+        }
+    } catch (e) {
+        msg.textContent = 'Connection error. Is the server running?';
+    }
+}
+
+async function loginDoctor() {
+    const data = {
+        email: document.getElementById('doctorEmail').value,
+        password: document.getElementById('doctorPassword').value
+    };
+    const msg = document.getElementById('doctorMsg');
+    if (!data.email || !data.password) {
+        msg.textContent = 'Please fill in all fields!';
+        return;
+    }
+    try {
+        const response = await fetch('/api/auth/login/doctor', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (response.ok) {
+            localStorage.setItem('token', result.token);
+            localStorage.setItem('name', result.name);
+            localStorage.setItem('doctorId', result.id);
+            msg.style.color = '#27ae60';
+            msg.textContent = '✅ Login successful! Redirecting...';
+            setTimeout(() => window.location.href = '/doctor-dashboard', 1500);
+        } else {
+            msg.style.color = '#e74c3c';
+            msg.textContent = result.message;
+        }
+    } catch (e) {
+        msg.textContent = 'Connection error. Is the server running?';
+    }
+}
+</script>
+</body>
+</html>

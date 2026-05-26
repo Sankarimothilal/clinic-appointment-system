@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Doctor Dashboard - ClinicEase</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f6fa; }
+        .navbar {
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            padding: 1rem 2rem;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+        .navbar h1 { font-size: 20px; }
+        .nav-links a { color: white; text-decoration: none; margin-left: 20px; font-size: 14px; opacity: 0.9; }
+        .container { max-width: 1000px; margin: 2rem auto; padding: 0 1.5rem; }
+        .welcome-banner {
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            color: white;
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.5rem;
+        }
+        .welcome-banner h2 { font-size: 1.3rem; margin-bottom: 5px; }
+        .welcome-banner p { opacity: 0.85; font-size: 14px; }
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.2rem 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .stat-icon { font-size: 2rem; }
+        .stat-number { font-size: 1.8rem; font-weight: 700; color: #11998e; }
+        .stat-label { font-size: 13px; color: #888; }
+        .section {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+            margin-bottom: 1.5rem;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .section-header h3 { color: #333; font-size: 1rem; }
+        .slot-form { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; }
+        .form-group { flex: 1; min-width: 140px; }
+        label { display: block; margin-bottom: 5px; color: #555; font-size: 13px; font-weight: 500; }
+        input[type="date"], input[type="time"] {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+        input:focus { border-color: #11998e; }
+        .add-btn {
+            padding: 11px 24px;
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .apt-card {
+            border: 1px solid #f0f0f0;
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .apt-card:hover { border-color: #11998e; }
+        .apt-info h4 { color: #333; font-size: 15px; margin-bottom: 5px; }
+        .apt-info p { color: #888; font-size: 13px; margin-bottom: 3px; }
+        .status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status.CONFIRMED { background: #e8f5e9; color: #2e7d32; }
+        .status.COMPLETED { background: #e3f2fd; color: #1565c0; }
+        .status.CANCELLED { background: #fce4ec; color: #c62828; }
+        .complete-btn {
+            padding: 6px 14px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+        .success-msg { color: #11998e; font-size: 13px; margin-top: 8px; }
+        .empty-state { text-align: center; padding: 3rem; color: #bbb; }
+        .empty-state span { font-size: 3rem; display: block; margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+<div class="navbar">
+    <h1>🏥 ClinicEase — Doctor Portal</h1>
+    <div class="nav-links">
+        <span style="opacity:0.9;font-size:14px" id="doctorName"></span>
+        <a href="/login" onclick="logout()">Logout</a>
+    </div>
+</div>
+<div class="container">
+    <div class="welcome-banner">
+        <h2 id="welcomeName">Welcome, Doctor!</h2>
+        <p>Manage your schedule and patient appointments</p>
+    </div>
+
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-icon">📅</div>
+            <div>
+                <div class="stat-number" id="totalCount">0</div>
+                <div class="stat-label">Total Appointments</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div>
+                <div class="stat-number" id="confirmedCount">0</div>
+                <div class="stat-label">Confirmed</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🏁</div>
+            <div>
+                <div class="stat-number" id="completedCount">0</div>
+                <div class="stat-label">Completed</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-header">
+            <h3>➕ Add Available Time Slot</h3>
+        </div>
+        <div class="slot-form">
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="slotDate"/>
+            </div>
+            <div class="form-group">
+                <label>Start Time</label>
+                <input type="time" id="startTime"/>
+            </div>
+            <div class="form-group">
+                <label>End Time</label>
+                <input type="time" id="endTime"/>
+            </div>
+            <button class="add-btn" onclick="addSlot()">Add Slot</button>
+        </div>
+        <div id="slotMsg"></div>
+    </div>
+
+    <div class="section">
+        <div class="section-header">
+            <h3>📋 My Appointments</h3>
+        </div>
+        <div id="appointmentsList"></div>
+    </div>
+</div>
+<script>
+const doctorId = localStorage.getItem('doctorId');
+const name = localStorage.getItem('name');
+document.getElementById('welcomeName').textContent = 'Welcome, Dr. ' + (name || '') + '! 👋';
+document.getElementById('doctorName').textContent = 'Dr. ' + (name || '');
+
+async function addSlot() {
+    const date = document.getElementById('slotDate').value;
+    const startTime = document.getElementById('startTime').value + ':00';
+    const endTime = document.getElementById('endTime').value + ':00';
+    const msg = document.getElementById('slotMsg');
+    if (!date || !startTime || !endTime) {
+        msg.innerHTML = '<p style="color:red;font-size:13px;margin-top:8px">Please fill all fields!</p>';
+        return;
+    }
+    const res = await fetch(`/api/slots/add/${doctorId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date, startTime, endTime })
+    });
+    if (res.ok) {
+        msg.innerHTML = '<p class="success-msg">✅ Slot added successfully!</p>';
+        setTimeout(() => msg.innerHTML = '', 3000);
+    } else {
+        msg.innerHTML = '<p style="color:red;font-size:13px;margin-top:8px">Failed to add slot!</p>';
+    }
+}
+
+async function loadAppointments() {
+    const res = await fetch(`/api/appointments/doctor/${doctorId}`);
+    const appointments = await res.json();
+
+    document.getElementById('totalCount').textContent = appointments.length;
+    document.getElementById('confirmedCount').textContent = appointments.filter(a => a.status === 'CONFIRMED').length;
+    document.getElementById('completedCount').textContent = appointments.filter(a => a.status === 'COMPLETED').length;
+
+    const list = document.getElementById('appointmentsList');
+    if (appointments.length === 0) {
+        list.innerHTML = '<div class="empty-state"><span>📭</span><p>No appointments yet.</p></div>';
+        return;
+    }
+    list.innerHTML = '';
+    appointments.forEach(apt => {
+        list.innerHTML += `
+        <div class="apt-card">
+            <div class="apt-info">
+                <h4>👤 ${apt.patient.name}</h4>
+                <p>📅 ${apt.slot.date} &nbsp;|&nbsp; ⏰ ${apt.slot.startTime.substring(0,5)} - ${apt.slot.endTime.substring(0,5)}</p>
+                <p>📝 ${apt.reason || 'No reason specified'} &nbsp;|&nbsp; 📞 ${apt.patient.phone || 'N/A'}</p>
+            </div>
+            <div style="display:flex;align-items:center">
+                <span class="status ${apt.status}">${apt.status}</span>
+                ${apt.status === 'CONFIRMED' ?
+                    `<button class="complete-btn" onclick="markComplete(${apt.id})">✓ Mark Done</button>` : ''}
+            </div>
+        </div>`;
+    });
+}
+
+async function markComplete(id) {
+    const res = await fetch(`/api/appointments/complete/${id}`, { method: 'PUT' });
+    if (res.ok) { location.reload(); }
+}
+
+function logout() { localStorage.clear(); }
+loadAppointments();
+</script>
+</body>
+</html>

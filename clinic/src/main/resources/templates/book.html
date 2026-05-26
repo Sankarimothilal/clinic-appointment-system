@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Appointment - ClinicEase</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f6fa; }
+        .navbar {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 1rem 2rem;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar h1 { font-size: 20px; }
+        .nav-links a { color: white; text-decoration: none; margin-left: 20px; font-size: 14px; opacity: 0.9; }
+        .container { max-width: 650px; margin: 2rem auto; padding: 0 1.5rem; }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+        }
+        .doctor-banner {
+            background: linear-gradient(135deg, #667eea20, #764ba220);
+            border: 1px solid #667eea40;
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .doctor-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+        .doctor-banner h3 { color: #333; font-size: 16px; }
+        .doctor-banner p { color: #888; font-size: 13px; margin-top: 3px; }
+        h2 { color: #333; font-size: 1.2rem; margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1.2rem; }
+        label { display: block; margin-bottom: 6px; color: #555; font-size: 13px; font-weight: 500; }
+        input[type="date"] {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+        input[type="date"]:focus { border-color: #667eea; }
+        .slot-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+        .slot-btn {
+            padding: 10px;
+            border: 1.5px solid #667eea;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+            text-align: center;
+            color: #667eea;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .slot-btn:hover { background: #f0f0ff; }
+        .slot-btn.selected { background: #667eea; color: white; }
+        .slot-btn.booked {
+            background: #f5f5f5;
+            color: #bbb;
+            border-color: #e0e0e0;
+            cursor: not-allowed;
+            text-decoration: line-through;
+        }
+        textarea {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            resize: vertical;
+            font-family: inherit;
+        }
+        textarea:focus { border-color: #667eea; }
+        .confirm-btn {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: opacity 0.2s;
+        }
+        .confirm-btn:hover { opacity: 0.9; }
+        .success { color: #27ae60; font-size: 13px; text-align: center; margin-top: 10px; }
+        .error { color: #e74c3c; font-size: 13px; text-align: center; margin-top: 10px; }
+        .no-slots { color: #999; font-size: 13px; padding: 1rem 0; }
+    </style>
+</head>
+<body>
+<div class="navbar">
+    <h1>🏥 Book Appointment</h1>
+    <div class="nav-links">
+        <a href="/patient-dashboard">Dashboard</a>
+        <a href="/doctors">← Back to Doctors</a>
+    </div>
+</div>
+<div class="container">
+    <div class="card">
+        <div class="doctor-banner" id="doctorBanner">
+            <div class="doctor-avatar">👨‍⚕️</div>
+            <div id="doctorInfo"><p style="color:#999">Loading doctor info...</p></div>
+        </div>
+
+        <h2>Select Date & Time Slot</h2>
+
+        <div class="form-group">
+            <label>📅 Appointment Date</label>
+            <input type="date" id="date" onchange="loadSlots()"/>
+        </div>
+
+        <div class="form-group">
+            <label>⏰ Available Slots</label>
+            <div class="slot-grid" id="slotGrid">
+                <p class="no-slots">Select a date to see available slots</p>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>📝 Reason for Visit</label>
+            <textarea id="reason" rows="3" placeholder="Describe your symptoms or reason for visit..."></textarea>
+        </div>
+
+        <button class="confirm-btn" onclick="bookAppointment()">Confirm Booking</button>
+        <div id="message"></div>
+    </div>
+</div>
+<script>
+const params = new URLSearchParams(window.location.search);
+const doctorId = params.get('doctorId');
+const patientId = localStorage.getItem('patientId');
+let selectedSlotId = null;
+
+// Set min date to today
+document.getElementById('date').min = new Date().toISOString().split('T')[0];
+
+async function loadDoctorInfo() {
+    const res = await fetch(`/api/doctors/${doctorId}`);
+    const doctor = await res.json();
+    document.getElementById('doctorInfo').innerHTML = `
+        <h3>${doctor.name}</h3>
+        <p>${doctor.specialization || 'General Medicine'} | ${doctor.qualification || 'MBBS'} | ${doctor.experienceYears || 0} yrs exp</p>
+    `;
+}
+
+async function loadSlots() {
+    const date = document.getElementById('date').value;
+    if (!date) return;
+    const res = await fetch(`/api/slots/available/${doctorId}?date=${date}`);
+    const slots = await res.json();
+    const grid = document.getElementById('slotGrid');
+    selectedSlotId = null;
+
+    if (!Array.isArray(slots) || slots.length === 0) {
+        grid.innerHTML = '<p class="no-slots">No slots available for this date. Try another date.</p>';
+        return;
+    }
+
+    grid.innerHTML = '';
+    slots.forEach(slot => {
+        const btn = document.createElement('div');
+        btn.className = slot.isBooked ? 'slot-btn booked' : 'slot-btn';
+        btn.textContent = slot.startTime.substring(0,5) + ' - ' + slot.endTime.substring(0,5);
+        if (!slot.isBooked) {
+            btn.onclick = () => {
+                document.querySelectorAll('.slot-btn:not(.booked)').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedSlotId = slot.id;
+            };
+        }
+        grid.appendChild(btn);
+    });
+}
+
+async function bookAppointment() {
+    const msg = document.getElementById('message');
+    if (!selectedSlotId) {
+        msg.className = 'error';
+        msg.textContent = '⚠️ Please select a time slot!';
+        return;
+    }
+    if (!patientId) {
+        msg.className = 'error';
+        msg.textContent = '⚠️ Please login first!';
+        setTimeout(() => window.location.href = '/login', 1500);
+        return;
+    }
+    const reason = document.getElementById('reason').value;
+    const res = await fetch(
+        `/api/appointments/book?patientId=${patientId}&doctorId=${doctorId}&slotId=${selectedSlotId}&reason=${encodeURIComponent(reason)}`,
+        { method: 'POST' }
+    );
+    if (res.ok) {
+        msg.className = 'success';
+        msg.textContent = '✅ Appointment booked successfully! Redirecting to dashboard...';
+        setTimeout(() => window.location.href = '/patient-dashboard', 2000);
+    } else {
+        const err = await res.text();
+        msg.className = 'error';
+        msg.textContent = '❌ ' + err;
+    }
+}
+
+loadDoctorInfo();
+</script>
+</body>
+</html>

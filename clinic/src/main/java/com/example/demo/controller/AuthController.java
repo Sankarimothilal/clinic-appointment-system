@@ -59,6 +59,7 @@ public class AuthController {
             );
 
             AuthResponse response = new AuthResponse();
+            response.setId(patient.getId());
             response.setToken(token);
             response.setRole("PATIENT");
             response.setName(patient.getName());
@@ -97,6 +98,7 @@ public class AuthController {
             );
 
             AuthResponse response = new AuthResponse();
+            response.setId(patient.getId());
             response.setToken(token);
             response.setRole("PATIENT");
             response.setName(patient.getName());
@@ -135,6 +137,7 @@ public class AuthController {
             );
 
             AuthResponse response = new AuthResponse();
+            response.setId(doctor.getId());
             response.setToken(token);
             response.setRole("DOCTOR");
             response.setName(doctor.getName());
@@ -143,6 +146,33 @@ public class AuthController {
 
         } catch (Exception e) {
             e.printStackTrace();
+            AuthResponse response = new AuthResponse();
+            response.setMessage("Error: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+    
+ // LOGIN - Admin (hardcoded for now)
+    @PostMapping("/login/admin")
+    public ResponseEntity<AuthResponse> loginAdmin(@RequestBody AuthRequest request) {
+        try {
+            if (request.getEmail().equals("admin@clinic.com") &&
+                request.getPassword().equals("admin123")) {
+
+                String token = jwtUtil.generateToken("admin@clinic.com", "ADMIN");
+
+                AuthResponse response = new AuthResponse();
+                response.setId(1L);
+                response.setToken(token);
+                response.setRole("ADMIN");
+                response.setName("Admin");
+                response.setMessage("Login successful!");
+                return ResponseEntity.ok(response);
+            }
+            AuthResponse response = new AuthResponse();
+            response.setMessage("Invalid admin credentials!");
+            return ResponseEntity.badRequest().body(response);
+        } catch (Exception e) {
             AuthResponse response = new AuthResponse();
             response.setMessage("Error: " + e.getMessage());
             return ResponseEntity.status(500).body(response);

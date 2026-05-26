@@ -113,4 +113,18 @@ public class AppointmentController {
             return ResponseEntity.status(500).body("Error: " + e.getMessage());
         }
     }
+    
+    @PutMapping("/complete/{appointmentId}")
+    public ResponseEntity<?> completeAppointment(@PathVariable Long appointmentId) {
+        try {
+            Appointment appointment = appointmentRepository.findById(appointmentId)
+                    .orElseThrow(() -> new RuntimeException("Appointment not found"));
+            appointment.setStatus(Appointment.AppointmentStatus.COMPLETED);
+            appointmentRepository.save(appointment);
+            return ResponseEntity.ok("Appointment marked as completed!");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
+    }
+    
 }
