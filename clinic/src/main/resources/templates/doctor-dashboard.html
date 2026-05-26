@@ -17,7 +17,7 @@
         }
         .navbar h1 { font-size: 20px; }
         .nav-links a { color: white; text-decoration: none; margin-left: 20px; font-size: 14px; opacity: 0.9; }
-        .container { max-width: 1000px; margin: 2rem auto; padding: 0 1.5rem; }
+        .container { max-width: 1100px; margin: 2rem auto; padding: 0 1.5rem; }
         .welcome-banner {
             background: linear-gradient(135deg, #11998e, #38ef7d);
             color: white;
@@ -27,7 +27,7 @@
         }
         .welcome-banner h2 { font-size: 1.3rem; margin-bottom: 5px; }
         .welcome-banner p { opacity: 0.85; font-size: 14px; }
-        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
         .stat-card {
             background: white;
             border-radius: 12px;
@@ -39,7 +39,7 @@
         }
         .stat-icon { font-size: 2rem; }
         .stat-number { font-size: 1.8rem; font-weight: 700; color: #11998e; }
-        .stat-label { font-size: 13px; color: #888; }
+        .stat-label { font-size: 12px; color: #888; }
         .section {
             background: white;
             border-radius: 16px;
@@ -59,15 +59,16 @@
         .slot-form { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; }
         .form-group { flex: 1; min-width: 140px; }
         label { display: block; margin-bottom: 5px; color: #555; font-size: 13px; font-weight: 500; }
-        input[type="date"], input[type="time"] {
+        input[type="date"], input[type="time"], input[type="text"], textarea {
             width: 100%;
             padding: 10px 14px;
             border: 1.5px solid #e0e0e0;
             border-radius: 8px;
             font-size: 14px;
             outline: none;
+            font-family: inherit;
         }
-        input:focus { border-color: #11998e; }
+        input:focus, textarea:focus { border-color: #11998e; }
         .add-btn {
             padding: 11px 24px;
             background: linear-gradient(135deg, #11998e, #38ef7d);
@@ -84,13 +85,26 @@
             border-radius: 12px;
             padding: 1rem 1.2rem;
             margin-bottom: 10px;
+            transition: border-color 0.2s;
+        }
+        .apt-card:hover { border-color: #11998e; }
+        .apt-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 8px;
         }
-        .apt-card:hover { border-color: #11998e; }
         .apt-info h4 { color: #333; font-size: 15px; margin-bottom: 5px; }
         .apt-info p { color: #888; font-size: 13px; margin-bottom: 3px; }
+        .apt-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .token-badge {
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
         .status {
             padding: 5px 12px;
             border-radius: 20px;
@@ -109,11 +123,82 @@
             cursor: pointer;
             font-size: 12px;
             font-weight: 500;
-            margin-left: 8px;
+        }
+        .cancel-btn {
+            padding: 6px 14px;
+            background: #fce4ec;
+            color: #c62828;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .prescription-btn {
+            padding: 6px 14px;
+            background: #e3f2fd;
+            color: #1565c0;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .prescription-form {
+            background: #f0f9ff;
+            border: 1px solid #b3e0ff;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 10px;
+            display: none;
+        }
+        .prescription-form.show { display: block; }
+        .prescription-form h5 { color: #1565c0; margin-bottom: 10px; font-size: 13px; }
+        .prescription-form textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #b3e0ff;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 8px;
+            resize: vertical;
+        }
+        .generate-pdf-btn {
+            padding: 8px 18px;
+            background: linear-gradient(135deg, #1565c0, #42a5f5);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
         }
         .success-msg { color: #11998e; font-size: 13px; margin-top: 8px; }
+        .error-msg { color: #e74c3c; font-size: 13px; margin-top: 8px; }
         .empty-state { text-align: center; padding: 3rem; color: #bbb; }
         .empty-state span { font-size: 3rem; display: block; margin-bottom: 1rem; }
+        .date-filter {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .date-filter input {
+            padding: 8px 12px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+        }
+        .filter-btn {
+            padding: 8px 16px;
+            background: #11998e;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+        }
     </style>
 </head>
 <body>
@@ -127,7 +212,7 @@
 <div class="container">
     <div class="welcome-banner">
         <h2 id="welcomeName">Welcome, Doctor!</h2>
-        <p>Manage your schedule and patient appointments</p>
+        <p>Manage your schedule, appointments and prescriptions</p>
     </div>
 
     <div class="stats">
@@ -152,8 +237,16 @@
                 <div class="stat-label">Completed</div>
             </div>
         </div>
+        <div class="stat-card">
+            <div class="stat-icon">🎫</div>
+            <div>
+                <div class="stat-number" id="todayCount">0</div>
+                <div class="stat-label">Today's Patients</div>
+            </div>
+        </div>
     </div>
 
+    <!-- Add Slot Section -->
     <div class="section">
         <div class="section-header">
             <h3>➕ Add Available Time Slot</h3>
@@ -176,18 +269,37 @@
         <div id="slotMsg"></div>
     </div>
 
+    <!-- Token Queue Section -->
     <div class="section">
         <div class="section-header">
-            <h3>📋 My Appointments</h3>
+            <h3>🎫 Today's Token Queue</h3>
+        </div>
+        <div class="date-filter">
+            <input type="date" id="filterDate"/>
+            <button class="filter-btn" onclick="loadQueue()">View Queue</button>
+        </div>
+        <div id="tokenQueue"></div>
+    </div>
+
+    <!-- All Appointments Section -->
+    <div class="section">
+        <div class="section-header">
+            <h3>📋 All Appointments</h3>
         </div>
         <div id="appointmentsList"></div>
     </div>
 </div>
+
 <script>
 const doctorId = localStorage.getItem('doctorId');
 const name = localStorage.getItem('name');
 document.getElementById('welcomeName').textContent = 'Welcome, Dr. ' + (name || '') + '! 👋';
 document.getElementById('doctorName').textContent = 'Dr. ' + (name || '');
+
+// Set today's date in filter
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('filterDate').value = today;
+document.getElementById('slotDate').min = today;
 
 async function addSlot() {
     const date = document.getElementById('slotDate').value;
@@ -195,7 +307,7 @@ async function addSlot() {
     const endTime = document.getElementById('endTime').value + ':00';
     const msg = document.getElementById('slotMsg');
     if (!date || !startTime || !endTime) {
-        msg.innerHTML = '<p style="color:red;font-size:13px;margin-top:8px">Please fill all fields!</p>';
+        msg.innerHTML = '<p class="error-msg">Please fill all fields!</p>';
         return;
     }
     const res = await fetch(`/api/slots/add/${doctorId}`, {
@@ -207,8 +319,40 @@ async function addSlot() {
         msg.innerHTML = '<p class="success-msg">✅ Slot added successfully!</p>';
         setTimeout(() => msg.innerHTML = '', 3000);
     } else {
-        msg.innerHTML = '<p style="color:red;font-size:13px;margin-top:8px">Failed to add slot!</p>';
+        msg.innerHTML = '<p class="error-msg">Failed to add slot!</p>';
     }
+}
+
+async function loadQueue() {
+    const date = document.getElementById('filterDate').value;
+    const res = await fetch(`/api/appointments/doctor/${doctorId}`);
+    const all = await res.json();
+    const filtered = all.filter(a => a.slot && a.slot.date === date)
+                        .sort((a, b) => (a.tokenNumber || 0) - (b.tokenNumber || 0));
+
+    const queue = document.getElementById('tokenQueue');
+    if (filtered.length === 0) {
+        queue.innerHTML = '<div class="empty-state"><span>🎫</span><p>No patients in queue for this date.</p></div>';
+        return;
+    }
+
+    queue.innerHTML = filtered.map(apt => `
+        <div class="apt-card" style="display:flex;align-items:center;gap:1rem;padding:0.8rem 1.2rem">
+            <div class="token-badge">Token #${apt.tokenNumber || 'N/A'}</div>
+            <div style="flex:1">
+                <strong>${apt.patient.name}</strong>
+                <span style="color:#888;font-size:13px;margin-left:10px">
+                    ⏰ ${apt.slot.startTime.substring(0,5)}
+                </span>
+                <span style="color:#888;font-size:13px;margin-left:10px">
+                    📝 ${apt.reason || 'No reason'}
+                </span>
+            </div>
+            <span class="status ${apt.status}">${apt.status}</span>
+        </div>
+    `).join('');
+
+    document.getElementById('todayCount').textContent = filtered.length;
 }
 
 async function loadAppointments() {
@@ -216,39 +360,94 @@ async function loadAppointments() {
     const appointments = await res.json();
 
     document.getElementById('totalCount').textContent = appointments.length;
-    document.getElementById('confirmedCount').textContent = appointments.filter(a => a.status === 'CONFIRMED').length;
-    document.getElementById('completedCount').textContent = appointments.filter(a => a.status === 'COMPLETED').length;
+    document.getElementById('confirmedCount').textContent =
+        appointments.filter(a => a.status === 'CONFIRMED').length;
+    document.getElementById('completedCount').textContent =
+        appointments.filter(a => a.status === 'COMPLETED').length;
 
     const list = document.getElementById('appointmentsList');
     if (appointments.length === 0) {
         list.innerHTML = '<div class="empty-state"><span>📭</span><p>No appointments yet.</p></div>';
         return;
     }
+
     list.innerHTML = '';
     appointments.forEach(apt => {
         list.innerHTML += `
         <div class="apt-card">
-            <div class="apt-info">
-                <h4>👤 ${apt.patient.name}</h4>
-                <p>📅 ${apt.slot.date} &nbsp;|&nbsp; ⏰ ${apt.slot.startTime.substring(0,5)} - ${apt.slot.endTime.substring(0,5)}</p>
-                <p>📝 ${apt.reason || 'No reason specified'} &nbsp;|&nbsp; 📞 ${apt.patient.phone || 'N/A'}</p>
+            <div class="apt-top">
+                <div class="apt-info">
+                    <h4>
+                        👤 ${apt.patient.name}
+                        ${apt.tokenNumber ? `<span class="token-badge" style="font-size:11px;margin-left:8px">Token #${apt.tokenNumber}</span>` : ''}
+                    </h4>
+                    <p>📅 ${apt.slot.date} &nbsp;|&nbsp; ⏰ ${apt.slot.startTime.substring(0,5)} - ${apt.slot.endTime.substring(0,5)}</p>
+                    <p>📝 ${apt.reason || 'No reason'} &nbsp;|&nbsp; 📞 ${apt.patient.phone || 'N/A'}</p>
+                </div>
+                <div class="apt-actions">
+                    <span class="status ${apt.status}">${apt.status}</span>
+                    ${apt.status === 'CONFIRMED' ? `
+                        <button class="complete-btn" onclick="markComplete(${apt.id})">✓ Done</button>
+                        <button class="cancel-btn" onclick="cancelAppointment(${apt.id})">✗ Cancel</button>
+                        <button class="prescription-btn" onclick="togglePrescription(${apt.id})">📄 Prescription</button>
+                    ` : ''}
+                    ${apt.status === 'COMPLETED' ? `
+                        <button class="prescription-btn" onclick="togglePrescription(${apt.id})">📄 Prescription</button>
+                    ` : ''}
+                </div>
             </div>
-            <div style="display:flex;align-items:center">
-                <span class="status ${apt.status}">${apt.status}</span>
-                ${apt.status === 'CONFIRMED' ?
-                    `<button class="complete-btn" onclick="markComplete(${apt.id})">✓ Mark Done</button>` : ''}
+            <div class="prescription-form" id="prescription-${apt.id}">
+                <h5>📋 Write Prescription for ${apt.patient.name}</h5>
+                <label style="font-size:12px;color:#555;margin-bottom:4px;display:block">
+                    Medicines (comma separated)
+                </label>
+                <textarea id="medicines-${apt.id}" rows="2"
+                    placeholder="e.g. Paracetamol 500mg, Cough syrup 10ml, Vitamin C"></textarea>
+                <label style="font-size:12px;color:#555;margin-bottom:4px;display:block">
+                    Doctor's Notes
+                </label>
+                <textarea id="notes-${apt.id}" rows="2"
+                    placeholder="e.g. Rest for 3 days, drink plenty of fluids"></textarea>
+                <button class="generate-pdf-btn"
+                    onclick="generatePrescription(${apt.id})">
+                    📥 Download Prescription PDF
+                </button>
             </div>
         </div>`;
     });
 }
 
+function togglePrescription(id) {
+    const form = document.getElementById('prescription-' + id);
+    form.classList.toggle('show');
+}
+
+function generatePrescription(appointmentId) {
+    const medicines = document.getElementById('medicines-' + appointmentId).value;
+    const notes = document.getElementById('notes-' + appointmentId).value;
+    const url = `/api/prescription/generate/${appointmentId}?medicines=${encodeURIComponent(medicines)}&notes=${encodeURIComponent(notes)}`;
+    window.open(url, '_blank');
+}
+
 async function markComplete(id) {
     const res = await fetch(`/api/appointments/complete/${id}`, { method: 'PUT' });
-    if (res.ok) { location.reload(); }
+    if (res.ok) { loadAppointments(); loadQueue(); }
+}
+
+async function cancelAppointment(id) {
+    if (!confirm('Cancel this appointment? Patient will be notified by email.')) return;
+    const res = await fetch(`/api/appointments/cancel/${id}`, { method: 'PUT' });
+    if (res.ok) {
+        alert('Cancelled! Patient notified by email.');
+        loadAppointments();
+        loadQueue();
+    }
 }
 
 function logout() { localStorage.clear(); }
+
 loadAppointments();
+loadQueue();
 </script>
 </body>
 </html>

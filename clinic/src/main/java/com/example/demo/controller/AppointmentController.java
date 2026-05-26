@@ -8,6 +8,7 @@ import com.example.demo.repository.AppointmentRepository;
 import com.example.demo.repository.DoctorRepository;
 import com.example.demo.repository.PatientRepository;
 import com.example.demo.repository.SlotRepository;
+import com.example.demo.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +30,9 @@ public class AppointmentController {
     @Autowired
     private SlotRepository slotRepository;
 
+    @Autowired
+    private EmailService emailService;
+
     // BOOK Appointment
     @PostMapping("/book")
     public ResponseEntity<?> bookAppointment(
@@ -48,20 +52,31 @@ public class AppointmentController {
                 return ResponseEntity.badRequest().body("Slot already booked!");
             }
 
-            // Mark slot as booked
             slot.setIsBooked(true);
             slot.setStatus(Slot.SlotStatus.BOOKED);
             slotRepository.save(slot);
 
-            // Create appointment
             Appointment appointment = new Appointment();
             appointment.setPatient(patient);
             appointment.setDoctor(doctor);
             appointment.setSlot(slot);
             appointment.setReason(reason);
             appointment.setStatus(Appointment.AppointmentStatus.CONFIRMED);
-
+         // Generate token number
+            Integer maxToken = appointmentRepository
+                .findMaxTokenByDoctorAndDate(doctorId, slot.getDate());
+            appointment.setTokenNumber(maxToken != null ? maxToken + 1 : 1);
             appointmentRepository.save(appointment);
+
+            // Send confirmation email
+            emailService.sendAppointmentConfirmation(
+                patient.getEmail(),
+                patient.getName(),
+                doctor.getName(),
+                slot.getDate().toString(),
+                slot.getStartTime().toString()
+            );
+
             return ResponseEntity.ok("Appointment booked successfully!");
 
         } catch (Exception e) {
@@ -69,25 +84,21 @@ public class AppointmentController {
         }
     }
 
-    // GET Patient's appointments
+    // GET Patient appointments
     @GetMapping("/patient/{patientId}")
     public ResponseEntity<?> getPatientAppointments(@PathVariable Long patientId) {
         try {
-            List<Appointment> appointments = appointmentRepository
-                    .findByPatientId(patientId);
-            return ResponseEntity.ok(appointments);
+            return ResponseEntity.ok(appointmentRepository.findByPatientId(patientId));
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error: " + e.getMessage());
         }
     }
 
-    // GET Doctor's appointments
+    // GET Doctor appointments
     @GetMapping("/doctor/{doctorId}")
     public ResponseEntity<?> getDoctorAppointments(@PathVariable Long doctorId) {
         try {
-            List<Appointment> appointments = appointmentRepository
-                    .findByDoctorId(doctorId);
-            return ResponseEntity.ok(appointments);
+            return ResponseEntity.ok(appointmentRepository.findByDoctorId(doctorId));
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error: " + e.getMessage());
         }
@@ -101,19 +112,28 @@ public class AppointmentController {
                     .orElseThrow(() -> new RuntimeException("Appointment not found"));
             appointment.setStatus(Appointment.AppointmentStatus.CANCELLED);
 
-            // Free up the slot
             Slot slot = appointment.getSlot();
             slot.setIsBooked(false);
             slot.setStatus(Slot.SlotStatus.AVAILABLE);
             slotRepository.save(slot);
-
             appointmentRepository.save(appointment);
+
+            // Send cancellation email
+            emailService.sendCancellationEmail(
+                appointment.getPatient().getEmail(),
+                appointment.getPatient().getName(),
+                appointment.getDoctor().getName(),
+                slot.getDate().toString(),
+                slot.getStartTime().toString()
+            );
+
             return ResponseEntity.ok("Appointment cancelled successfully!");
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error: " + e.getMessage());
         }
     }
-    
+
+    // COMPLETE Appointment
     @PutMapping("/complete/{appointmentId}")
     public ResponseEntity<?> completeAppointment(@PathVariable Long appointmentId) {
         try {
@@ -126,5 +146,4 @@ public class AppointmentController {
             return ResponseEntity.status(500).body("Error: " + e.getMessage());
         }
     }
-    
 }
